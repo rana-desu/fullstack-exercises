@@ -1,70 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const Filter = ({ value, onChange }) => {
-  return (
-    <div>
-      show with filter: 
-      <input 
-        type="text"
-        value={value}
-        onChange={onChange}
-      />
-      </div>
-  )
-}
+import Filter from './components/Filter'
+import PersonForm from './components/PersonForm'
+import Persons from './components/Persons'
 
-const PersonForm = ({ onSubmit, values, onChange }) => {
-  return (
-    <form onSubmit={onSubmit}>
-      <div>
-        name: 
-        <input 
-          type="text"
-          value={values.name}
-          onChange={onChange.name}
-        />
-        <br />
-        number: 
-        <input 
-          type="text"
-          value={values.phoneNumber}
-          onChange={onChange.phoneNumber}
-        />
-      </div>
-      <div>
-        <button type="submit">add</button>
-      </div>
-    </form>
-  )
-}
-
-const Person = ({ person }) => {
-  return ( 
-    <p>
-      {person.name}
-      {' '}
-      {person.phoneNumber}
-    </p>
-  )
-}
-
-const Persons = ({ persons }) => {
-  return (
-    <div>
-      {persons.map(person =>
-        <Person key={person.id} person={person} />
-      )}
-    </div>
-  )
-}
+import personService from './services/persons'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', phoneNumber: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', phoneNumber: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', phoneNumber: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', phoneNumber: '39-23-6423122', id: 4 }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newPhoneNumber, setNewPhoneNumber] = useState('')
   const [newSearchTerm, setNewSearchTerm] = useState('')
@@ -76,28 +19,61 @@ const App = () => {
   let personsToShow = persons
   if (newSearchTerm !== '') { personsToShow = filterNames(persons, newSearchTerm) }
 
-  // const personsToShow = newSearchTerm
-  //   ? persons
-  //   : persons.filter(person => person.name.includes(newSearchTerm));
+  useEffect(() => {
+    personService
+      .render()
+      .then(initialPersons => {
+        setPersons(initialPersons)
+      })
+  }, [])
+  console.log('rendered', persons.length, 'person objects')
 
   const addPerson = (event) => {
     event.preventDefault()
 
     const newPersonObject = {
       name: newName,
-      phoneNumber: newPhoneNumber,
-      id: persons.length + 1
+      phoneNumber: newPhoneNumber
     }
 
-    const alreadyExists = persons.some(person => person.name === newPersonObject.name)
+    const alreadyExists = persons.find(p => p.name === newPersonObject.name)
+    
     if (alreadyExists) {
-      alert(`${newPersonObject.name} already exists in the phonebook.`)
+      confirm(
+        `${alreadyExists.name} already exists in the phonebook, replace the old number with a new one?`
+      )
+      console.log('confirmed, replacing entry', confirm)
+      
+      if (confirm) {
+        const updatedPerson = { ...alreadyExists, phoneNumber: newPersonObject.phoneNumber }
+
+        personService.update(updatedPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(person => person.name === returnedPerson.name ? updatedPerson : person))
+            setNewName('')
+            setNewPhoneNumber('')
+          })
+      }
       return
     }
 
-    setPersons(persons.concat(newPersonObject))
-    setNewName('')
-    setNewPhoneNumber('')
+    personService
+      .create(newPersonObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewPhoneNumber('')
+      })
+  }
+
+  const handleRemove = (id) => {
+    personService.remove(id)
+      .then(() => {
+        setPersons(persons.filter(person => person.id !== id))
+      })
+      .catch(error => {
+        alert('error deleting person:', error)
+      })
   }
 
   // value controllers for input fields
@@ -118,7 +94,10 @@ const App = () => {
       />
 
       <h2>Numbers</h2>
-      <Persons persons={personsToShow} />
+      <Persons 
+        persons={personsToShow}
+        onRemove={handleRemove}
+      />
     </div>
   )
 }
