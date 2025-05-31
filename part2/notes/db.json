@@ -16,49 +16,19 @@
       "important": false
     },
     {
-      "id": "4",
-      "content": "new note",
+      "id": "1d6f",
+      "content": "I love JavaScript so much, I could kill myself",
       "important": false
     },
     {
-      "id": "5",
-      "content": "aads",
+      "id": "7574",
+      "content": "I love frieren",
+      "important": true
+    },
+    {
+      "id": "5d7e",
+      "content": "I love frieren",
       "important": false
-    },
-    {
-      "id": "6",
-      "content": "hi",
-      "important": true
-    },
-    {
-      "id": "7",
-      "content": "hello",
-      "important": true
-    },
-    {
-      "id": "8",
-      "content": "",
-      "important": false
-    },
-    {
-      "id": "9",
-      "content": "",
-      "important": true
-    },
-    {
-      "id": "10",
-      "content": "",
-      "important": true
-    },
-    {
-      "id": "11",
-      "content": "a",
-      "important": false
-    },
-    {
-      "id": "12",
-      "content": "b",
-      "important": true
     }
   ]
 }

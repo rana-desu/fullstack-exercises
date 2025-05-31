@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
+
 import Note from './components/Note'
+import Notification from './components/Notification'
+import Footer from './components/Footer'
 import noteService from './services/notes'
 
 
@@ -7,9 +10,9 @@ const App = () => {
   const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
   const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState(null)
 
-  // executes GET request using an effect
-  // this effect only executes once after the first render
+  // only executes after the first render
   useEffect(() => {
     noteService
       .getAll()
@@ -23,7 +26,6 @@ const App = () => {
     console.log('button clicked', event.target)
 
     const newNoteObject = {
-      id: (notes.length + 1).toString(),
       content: newNote,
       important: Math.random() < 0.5
     }
@@ -33,6 +35,13 @@ const App = () => {
       .then(returnedNote => {
         setNotes(notes.concat(returnedNote))
         setNewNote('')
+
+        setErrorMessage(
+          `${returnedNote.content} was added.`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
       })
   }
 
@@ -48,19 +57,22 @@ const App = () => {
     const changedNote = { ...note, important: !note.important }
     console.log('changed note', changedNote)
     
-    // put request changes a part of the resource
+    // PUT request changes a part of the resource
     noteService
       .update(id, changedNote)
       .then(returnedNote => {
         notes.map(note => note.id === id ? returnedNote : note)
       })
       .catch(error => {
-        console.log(error)
-        
-        alert(
-          `the note ${note.content} was already deleted from server`
+        setErrorMessage(
+          `Note ${note.content} was already deleted from the server`
         )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000) // displays error message for 5 seconds
         setNotes(notes.filter(n => n.id !== id))
+
+        console.log(error)
       })
   }
 
@@ -71,8 +83,9 @@ const App = () => {
   return (
     <div>
       <h1>Notes</h1>
+      <Notification message={errorMessage}/>
       <div>
-        <button onClick={() => setShowAll(!showAll)}>
+        <button onClick={() => setShowAll(!showAll)} className="standard-buttons">
           show {showAll ? 'important' : 'all'}
         </button>
       </div>
@@ -92,8 +105,10 @@ const App = () => {
           value={newNote}
           onChange={handleNoteChange}
         />
-        <button type="submit">save</button>
+        <button type="submit" className="standard-buttons">save</button>
       </form>
+
+      <Footer />
     </div>
   )
 }

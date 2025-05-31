@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notification from './components/Notification'
 
 import personService from './services/persons'
 
@@ -11,6 +12,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newPhoneNumber, setNewPhoneNumber] = useState('')
   const [newSearchTerm, setNewSearchTerm] = useState('')
+  const [notifMessage, setNotifMessage] = useState(null)
 
   const filterNames = (persons, term) => {
     return persons.filter(person => person.name.toLowerCase().includes(term))
@@ -53,16 +55,28 @@ const App = () => {
             setNewName('')
             setNewPhoneNumber('')
           })
+          .catch(error => {
+            console.log(error)
+            
+            setNotifMessage(`${alreadyExists.name} has already been deleted from the database.`)
+            setPersons(persons.filter(person => person !== alreadyExists))
+          })
       }
       return
     }
 
-    personService
-      .create(newPersonObject)
+    personService.create(newPersonObject)
       .then(returnedPerson => {
         setPersons(persons.concat(returnedPerson))
         setNewName('')
         setNewPhoneNumber('')
+
+        setNotifMessage(
+          `${returnedPerson.name} has been added.`
+        )
+        setTimeout(() => {
+          setNotifMessage(null)
+        }, 5000)
       })
   }
 
@@ -84,6 +98,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notifMessage} />
       <Filter value={newSearchTerm} onChange={onSearchInputChange} />
 
       <h2>Add a new</h2>
