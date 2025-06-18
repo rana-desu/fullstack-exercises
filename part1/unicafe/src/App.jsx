@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+// change to hide embarrassing misuse of "feat" convention in commits
+
 const Button = ({ onClick, btnName }) => {
   return (
     <button onClick={onClick}>
