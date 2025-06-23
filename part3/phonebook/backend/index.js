@@ -8,6 +8,8 @@ app.use(express.json())
 app.use(express.static('dist'))
 app.use(cors())
 
+// express.static is used to respond with static routes and content.
+
 morgan.token('body', (request, response) => (
     JSON.stringify(request.body)
 ))
